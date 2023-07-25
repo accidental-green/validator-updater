@@ -1,5 +1,7 @@
 # Validator Update
-Open source tool to instantly update Execution and Consensus clients to the latests version.
+Open source tool to instantly update Execution and Consensus clients to the latests version
+
+The updater assumes the original installation used Somer Esat's guides.
 
 To run the program, use the following commands:
 
