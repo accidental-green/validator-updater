@@ -9,7 +9,7 @@ To run the program, use the following commands:
 
 `git clone https://github.com/accidental-green/validator-update.git`
 
-`python3 validator-update/validator-update.py`
+`python3 validator-update/validator_update.py`
 
 This will update to the latest version of the selected clients and print a confirmation at the end.
 
