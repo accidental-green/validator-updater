@@ -48,10 +48,6 @@ consensus_client_cap = consensus_client.capitalize()
 subprocess.run(['sudo', 'apt', '-y', 'update'])
 subprocess.run(['sudo', 'apt', '-y', 'upgrade'])
 
-# Dist-upgrade and autoremove packages
-subprocess.run(['sudo', 'apt', '-y', 'dist-upgrade'])
-subprocess.run(['sudo', 'apt', '-y', 'autoremove'])
-
 ############ GETH ##################
 if eth_exec_client == 'geth':
     # Define the URL of the Geth download page
