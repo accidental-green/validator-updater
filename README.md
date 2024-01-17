@@ -1,5 +1,10 @@
 # Ethereum Validator Updater
-Easily update execution, consensus, and mevboost clients to the latest versions in a single click using this update tool. The script is adapted from Somer Esat's guides and makes maintaining a validator simple and accessible to all.
+Easily update execution, consensus, and mevboost clients to the latest versions in a single click using this update tool.
+
+The script is adapted from Somer Esat's guides and makes maintaining a validator simple and accessible.
+
+### Validator Updater (GUI):
+![Screenshot from 2024-01-16 16-50-40](https://github.com/accidental-green/validator-update/assets/72235883/c2718fb3-8c97-4a93-aa2e-7d49bb4a5cec)
 
 ## Features:
 
