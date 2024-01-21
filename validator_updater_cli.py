@@ -156,7 +156,54 @@ if mevboost_update == 'yes':
         except Exception as e:
             print("Error:", e)
 
-    
+# Variables
+
+mevboost_update = mevboost_update.lower()
+
+execution_client = execution_client.lower()
+consensus_client = consensus_client.lower()
+
+
+########### STOP SERVICES ###############
+print("\n########### STOPPING SERVICES ###############\n")
+# Stop services based on user input
+if execution_client == "geth":
+    print("Stopping geth service")
+    subprocess.run(['sudo', 'systemctl', 'stop', 'geth'])
+
+if execution_client == "besu":
+    print("Stopping besu service")
+    subprocess.run(['sudo', 'systemctl', 'stop', 'besu'])
+
+if execution_client == "nethermind":
+    print("Stopping nethermind service")
+    subprocess.run(['sudo', 'systemctl', 'stop', 'nethermind'])
+
+if consensus_client == "teku":
+    print("Stopping teku service")
+    subprocess.run(['sudo', 'systemctl', 'stop', 'teku'])
+
+if consensus_client == "nimbus":
+    print("Stopping nimbus service")
+    subprocess.run(['sudo', 'systemctl', 'stop', 'nimbus'])
+
+if consensus_client == "lighthouse":
+    print("Stopping lighthouse beacon service")
+    subprocess.run(['sudo', 'systemctl', 'stop', 'lighthousebeacon'])
+    print("Stopping lighthouse validator service")
+    subprocess.run(['sudo', 'systemctl', 'stop', 'lighthousevalidator'])
+
+if consensus_client == "prysm":
+    print("Stopping prysm beacon service")
+    subprocess.run(['sudo', 'systemctl', 'stop', 'prysmbeacon'])
+    print("Stopping prysm validator service")
+    subprocess.run(['sudo', 'systemctl', 'stop', 'prysmvalidator'])
+
+# Check if mevboost_update is "mevboost" and stop mevboost service
+if mevboost_update == "yes":
+    print("Stopping mevboost service")
+    subprocess.run(['sudo', 'systemctl', 'stop', 'mevboost'])
+
 # Update and upgrade packages
 subprocess.run(['sudo', 'apt', '-y', 'update'])
 subprocess.run(['sudo', 'apt', '-y', 'upgrade'])

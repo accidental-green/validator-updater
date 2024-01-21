@@ -25,6 +25,7 @@ except subprocess.CalledProcessError:
     print("Failed to verify sudo credentials.")
     exit(1)
 
+
 # Define the groups of clients
 ec_group = ("geth", "besu", "nethermind")
 cc_group = ("teku", "nimbus", "prysm", "lighthouse")
@@ -141,6 +142,46 @@ consensus_client_update = consensus_client_update.lower()
 
 execution_client = execution_client_update
 consensus_client = consensus_client_update
+
+########### STOP SERVICES ###############
+print("\n########### STOPPING SERVICES ###############\n")
+# Stop services based on user input
+if execution_client_update == "geth":
+    print("Stopping geth service")
+    subprocess.run(['sudo', 'systemctl', 'stop', 'geth'])
+
+if execution_client_update == "besu":
+    print("Stopping besu service")
+    subprocess.run(['sudo', 'systemctl', 'stop', 'besu'])
+
+if execution_client_update == "nethermind":
+    print("Stopping nethermind service")
+    subprocess.run(['sudo', 'systemctl', 'stop', 'nethermind'])
+
+if consensus_client_update == "teku":
+    print("Stopping teku service")
+    subprocess.run(['sudo', 'systemctl', 'stop', 'teku'])
+
+if consensus_client_update == "nimbus":
+    print("Stopping nimbus service")
+    subprocess.run(['sudo', 'systemctl', 'stop', 'nimbus'])
+
+if consensus_client_update == "lighthouse":
+    print("Stopping lighthouse beacon service")
+    subprocess.run(['sudo', 'systemctl', 'stop', 'lighthousebeacon'])
+    print("Stopping lighthouse validator service")
+    subprocess.run(['sudo', 'systemctl', 'stop', 'lighthousevalidator'])
+
+if consensus_client_update == "prysm":
+    print("Stopping prysm beacon service")
+    subprocess.run(['sudo', 'systemctl', 'stop', 'prysmbeacon'])
+    print("Stopping prysm validator service")
+    subprocess.run(['sudo', 'systemctl', 'stop', 'prysmvalidator'])
+
+# Check if mevboost_update is "mevboost" and stop mevboost service
+if mevboost_update == "yes":
+    print("Stopping mevboost service")
+    subprocess.run(['sudo', 'systemctl', 'stop', 'mevboost'])
 
 class GoReleaseLinkParser(HTMLParser):
     def __init__(self):
@@ -614,4 +655,6 @@ if mevboost_update == "yes":
     output = subprocess.check_output(["mev-boost", "-version"], text=True)
     version = output.split()[-1]
     print(f"Mevboost Version: {output.split()[-1]}\n")
+
+print("\n Start service files to begin running the updated clients.\n")
 
