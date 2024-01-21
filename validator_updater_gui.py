@@ -317,6 +317,8 @@ if execution_client == 'geth':
         print('Error: could not find download URL.')
 
     geth_version = download_url.split("/")[-2]
+    
+    geth_url = download_url
 
 ############ BESU ##################
 if execution_client == 'besu':
@@ -354,6 +356,7 @@ if execution_client == 'besu':
 	os.remove(f"besu-{latest_version}.tar.gz")
 
 	print(f'\nSuccessfully installed besu-{latest_version}')
+	besu_url = download_url
 
 ############ NETHERMIND ##################
 if execution_client == 'nethermind':
@@ -413,6 +416,7 @@ if execution_client == 'nethermind':
     os.remove(temp_path)
 
     nethermind_version = os.path.splitext(zip_filename)[0]
+    nethermind_url = download_url
 
 ############ TEKU ##################
 if consensus_client == 'teku':
@@ -452,6 +456,7 @@ if consensus_client == 'teku':
     print("Teku binary installed successfully!")
     print(f"Download URL: {download_url}")
     print(f"teku-v{latest_version}")
+    teku_url = download_url
 
 ################ PRYSM ###################
 if consensus_client == 'prysm':
@@ -484,6 +489,7 @@ if consensus_client == 'prysm':
     prysm_version = link.split("/")[-1]
 
     print(f"Successfully installed Prsym {prysm_version}")
+    prysm_urls = download_links
 
 ################ NIMBUS ##################
 if consensus_client == 'nimbus':
@@ -542,6 +548,7 @@ if consensus_client == 'nimbus':
     print("Nimbus binary installed successfully!")
     print(f"Download URL: {download_url}")
     print(f"\nSuccessfully Installed Nimbus Version {version}")
+    nimbus_url = download_url
 
 ############ LIGHTHOUSE ##################
 if consensus_client == 'lighthouse':
@@ -588,11 +595,13 @@ if consensus_client == 'lighthouse':
 
     print("Lighthouse binary installed successfully!")
     print(f"Download URL: {download_url}")
+    lighthouse_url = download_url
 
 ######## PRINT OUTPUT ############
-print("\nUpdate Successful! See versions listed below:")
+print("\nUpdate Complete! See current versions listed below:")
 # Geth Print
 if execution_client == 'geth':
+    print(f'Geth Download URL:\n{geth_url}\n')
     geth_version = subprocess.run(["geth", "--version"], stdout=subprocess.PIPE).stdout
     if geth_version is not None:
         geth_version = geth_version.decode()
@@ -603,10 +612,12 @@ if execution_client == 'geth':
 
 # Besu Print
 if execution_client == 'besu':
-    print(f'\nBesu Version: v{besu_version}\n')
+    print(f'\nBesu Download URL:\n{besu_url}\n')
+    print(f'Besu Version: v{besu_version}\n')
 
 # Nethermind Print
 if execution_client == 'nethermind':
+    print(f'Nethermind Download URL:\n{nethermind_url}\n')
     # Use regular expression to extract the version number
     match = re.search(r'(\d+\.\d+\.\d+)', nethermind_version)
     
@@ -616,10 +627,12 @@ if execution_client == 'nethermind':
 
 # Teku Print
 if consensus_client == 'teku':
-    print(f"Teku Version: v{latest_version}\n")
+    print(f'Teku Download URL:\n{teku_url}\n')
+    print(f"Teku Version: v{teku_version}\n")
 
 # Prysm Print
 if consensus_client == 'prysm':
+    print(f'Prysm Download URLs:\n{prysm_urls[0]}\n{prysm_urls[1]}\n')
     prysm_version = subprocess.run(["beacon-chain", "--version"], stdout=subprocess.PIPE).stdout
     if prysm_version is not None:
         prysm_version = prysm_version.decode().splitlines()[0]
@@ -630,6 +643,7 @@ if consensus_client == 'prysm':
 
 # Nimbus Print
 if consensus_client == 'nimbus':
+    print(f'Nimbus Download URL:\n{nimbus_url}\n')
     nimbus_version = subprocess.run(["nimbus_beacon_node", "--version"], stdout=subprocess.PIPE).stdout
     if nimbus_version is not None:
         nimbus_version = nimbus_version.decode().splitlines()[0]
@@ -641,6 +655,7 @@ if consensus_client == 'nimbus':
 
 # LIGHTHOUSE PRINT
 if consensus_client == 'lighthouse':
+    print(f'Lighthouse Download URL:\n{lighthouse_url}\n')
     lighthouse_version = subprocess.run(["lighthouse", "-V"], stdout=subprocess.PIPE).stdout
     if lighthouse_version is not None:
         lighthouse_version = lighthouse_version.decode()
@@ -656,5 +671,5 @@ if mevboost_update == "yes":
     version = output.split()[-1]
     print(f"Mevboost Version: {output.split()[-1]}\n")
 
-print("\n Start service files to begin running the updated clients.\n")
+print("Start service files to begin running the updated clients.\n")
 
