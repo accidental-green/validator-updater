@@ -1,7 +1,7 @@
 # Ethereum Validator Updater
-Easily update execution, consensus, and mevboost clients to the latest versions in a single click using this update tool.
+Easily update execution, consensus, and mevboost clients to the latest versions with a single click.
 
-The script is adapted from Somer Esat's guides and makes maintaining a validator simple and accessible.
+The script is open source and adapted from Somer Esat's guides to make updating a validator simple and accessible.
 
 ### Validator Updater (GUI):
 ![Screenshot from 2024-01-16 16-50-40](https://github.com/accidental-green/validator-update/assets/72235883/c2718fb3-8c97-4a93-aa2e-7d49bb4a5cec)
@@ -24,7 +24,7 @@ The script is adapted from Somer Esat's guides and makes maintaining a validator
 `git clone https://github.com/accidental-green/validator-updater.git`
 
 ## Update Instructions:
-Note: Choose either GUI (display) or CLI (terminal). Program starts upon running one of these commands:
+Choose either GUI (pop-up window) or CLI (terminal). Program starts upon running one of these commands:
 
 **GUI Version:**
 
@@ -44,10 +44,10 @@ Make selections and click "Update". The GUI window will close and updates will p
 
 ### Successful Update:
 
-![Screenshot from 2024-01-16 17-11-12](https://github.com/accidental-green/validator-update/assets/72235883/c1f0f984-29d7-47b9-a982-1c31269cde02)
+![Screenshot from 2024-03-02 00-22-58](https://github.com/accidental-green/validator-updater/assets/72235883/378db086-635d-46a3-a7d5-3e46f7e94a79)
 
 
-Once the updates have completed (~1 minute), you can restart the clients and begin running the new versions.
+Once the updates have completed (~1 minute), you can start the services and begin validating again!
 
 ### Update Steps (CLI):
 
