@@ -25,7 +25,6 @@ except subprocess.CalledProcessError:
     print("Failed to verify sudo credentials.")
     exit(1)
 
-
 # Define the groups of clients
 ec_group = ("geth", "besu", "nethermind")
 cc_group = ("teku", "nimbus", "prysm", "lighthouse")
@@ -598,41 +597,56 @@ if consensus_client == 'lighthouse':
     lighthouse_url = download_url
 
 ######## PRINT OUTPUT ############
-print("\nUpdate Complete! See current versions listed below:")
+print("\n########## UPDATE COMPLETE ##########\n")
 # Geth Print
 if execution_client == 'geth':
-    print(f'Geth Download URL:\n{geth_url}\n')
     geth_version = subprocess.run(["geth", "--version"], stdout=subprocess.PIPE).stdout
     if geth_version is not None:
         geth_version = geth_version.decode()
         geth_version = (geth_version.split(" ")[-1]).split("-")[-3]
     else:
         geth_version = ""
-    print(f'\nGeth Version: v{geth_version}\n')
+    print(f'Geth Version: v{geth_version}\n')
 
 # Besu Print
 if execution_client == 'besu':
-    print(f'\nBesu Download URL:\n{besu_url}\n')
-    print(f'Besu Version: v{besu_version}\n')
+    besu_output = subprocess.run(["sudo", "/usr/local/bin/besu/bin/besu", "--version"], stdout=subprocess.PIPE, text=True)
+    if besu_output.returncode == 0:
+        besu_version = besu_output.stdout.strip().split('/')[1].split('/')[0]
+    else:
+        besu_version = "Failed to execute command"
+    print(f'Besu Version: {besu_version}\n')
 
 # Nethermind Print
 if execution_client == 'nethermind':
-    print(f'Nethermind Download URL:\n{nethermind_url}\n')
-    # Use regular expression to extract the version number
-    match = re.search(r'(\d+\.\d+\.\d+)', nethermind_version)
-    
-    if match:
-        extracted_version = match.group(1)
-        print(f'\nNethermind Version: v{extracted_version}\n')
+    nethermind_output = subprocess.run(["sudo", "/usr/local/bin/nethermind/nethermind", "-v"], capture_output=True, text=True)
+    if nethermind_output.returncode == 0:
+        version_match = re.search(r'Version:\s*(\S+)', nethermind_output.stdout)
+        if version_match:
+            version_str = version_match.group(1)
+            nethermind_version = version_str.split('+')[0]  # Remove additional build information
+        else:
+            nethermind_version = "Version information not found"
+    else:
+        nethermind_version = "Failed to execute command"
+    print(f'Nethermind Version: {nethermind_version}\n')
 
 # Teku Print
 if consensus_client == 'teku':
-    print(f'Teku Download URL:\n{teku_url}\n')
-    print(f"Teku Version: v{teku_version}\n")
+    teku_output = subprocess.run(["sudo", "/usr/local/bin/teku/bin/teku", "--version"], stdout=subprocess.PIPE, text=True)
+    if teku_output.returncode == 0:
+        version_line = teku_output.stdout.strip().splitlines()[0]
+        version_parts = version_line.split('/')
+        if len(version_parts) >= 2:
+            teku_version = version_parts[1].split('-')[0]
+        else:
+            teku_version = "Version information not found"
+    else:
+        teku_version = "Failed to execute command"
+    print(f'Teku Version: {teku_version}\n')
 
 # Prysm Print
 if consensus_client == 'prysm':
-    print(f'Prysm Download URLs:\n{prysm_urls[0]}\n{prysm_urls[1]}\n')
     prysm_version = subprocess.run(["beacon-chain", "--version"], stdout=subprocess.PIPE).stdout
     if prysm_version is not None:
         prysm_version = prysm_version.decode().splitlines()[0]
@@ -643,19 +657,16 @@ if consensus_client == 'prysm':
 
 # Nimbus Print
 if consensus_client == 'nimbus':
-    print(f'Nimbus Download URL:\n{nimbus_url}\n')
-    nimbus_version = subprocess.run(["nimbus_beacon_node", "--version"], stdout=subprocess.PIPE).stdout
-    if nimbus_version is not None:
-        nimbus_version = nimbus_version.decode().splitlines()[0]
-        nimbus_version = nimbus_version.split(" ")[-1]
-        nimbus_version = nimbus_version.split("-")[-3]
+    nimbus_output = subprocess.run(["nimbus_beacon_node", "--version"], stdout=subprocess.PIPE, text=True)
+    if nimbus_output.returncode == 0:
+        version_parts = nimbus_output.stdout.strip().split()[3].split('-')
+        nimbus_version = version_parts[0]
     else:
-        nimbus_version = ""
+        nimbus_version = "Failed to execute command"
     print(f'Nimbus Version: {nimbus_version}\n')
 
 # LIGHTHOUSE PRINT
 if consensus_client == 'lighthouse':
-    print(f'Lighthouse Download URL:\n{lighthouse_url}\n')
     lighthouse_version = subprocess.run(["lighthouse", "-V"], stdout=subprocess.PIPE).stdout
     if lighthouse_version is not None:
         lighthouse_version = lighthouse_version.decode()
@@ -671,5 +682,48 @@ if mevboost_update == "yes":
     version = output.split()[-1]
     print(f"Mevboost Version: {output.split()[-1]}\n")
 
-print("Start service files to begin running the updated clients.\n")
+# Constructing the list of services to start
+services_to_start = [execution_client.lower(), consensus_client.lower()]
+if mevboost_update == "yes":
+    services_to_start.append("mevboost".lower())
 
+# Constructing the list of services to start
+services_to_start = [execution_client.lower(), consensus_client.lower()]
+if mevboost_update == "yes":
+    services_to_start.append("mevboost".lower())
+
+# Constructing the services string
+if len(services_to_start) == 1:
+    services_str = services_to_start[0]
+elif len(services_to_start) == 2:
+    services_str = " and ".join(services_to_start)
+else:
+    services_str = ", ".join(services_to_start[:-1]) + ", and " + services_to_start[-1]
+
+# Printing Start Services
+print("########## START SERVICES ##########\n")
+
+allowed_responses = ['y', 'n', 'yes', 'no']
+response = input(f"Would you like to start {services_str}? (yes/no): ").lower()
+
+while response not in allowed_responses:
+    print("Invalid selection. Please try again.")
+    response = input(f"Would you like to start {services_str}? (yes/no): ").lower()
+
+if response in ['y', 'yes']:
+    if 'prysm' in services_to_start:
+        subprocess.run(["sudo", "systemctl", "start", "prysmbeacon"])
+        subprocess.run(["sudo", "systemctl", "start", "prysmvalidator"])
+        services_to_start.remove('prysm')
+    elif 'lighthouse' in services_to_start:
+        subprocess.run(["sudo", "systemctl", "start", "lighthousebeacon"])
+        subprocess.run(["sudo", "systemctl", "start", "lighthousevalidator"])
+        services_to_start.remove('lighthouse')
+    
+    # Start execution client and MEV service if selected
+    for service in services_to_start:
+        subprocess.run(["sudo", "systemctl", "start", service])
+    
+    print("\nStarting services, validators should be online momentarily!\n")
+else:
+    print("\nUpdate complete! You can start services in order to begin attesting again.\n")
