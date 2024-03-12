@@ -267,7 +267,7 @@ if execution_client == 'besu':
 	besu_version = latest_version
 
 	# Download the latest version
-	download_url = f"https://hyperledger.jfrog.io/hyperledger/besu-binaries/besu/{latest_version}/besu-{latest_version}.tar.gz"
+	download_url = f"https://github.com/hyperledger/besu/releases/download/{latest_version}/besu-{latest_version}.tar.gz"
 	urllib.request.urlretrieve(download_url, f"besu-{latest_version}.tar.gz")
 
 	# Extract the tar.gz file
