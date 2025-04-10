@@ -1,65 +1,61 @@
 # Ethereum Validator Updater
-Easily update execution, consensus, and mevboost clients to the latest versions with a single click.
-
-The script is open source and adapted from Somer Esat's guides to make updating a validator simple and accessible.
-
-### Validator Updater (GUI):
-![Screenshot from 2024-01-16 16-50-40](https://github.com/accidental-green/validator-update/assets/72235883/c2718fb3-8c97-4a93-aa2e-7d49bb4a5cec)
+Open source application to easily update Ethereum clients to the latest versions with a single click.
 
 ## Features:
 
-- **Multi-client Support**: Update all major clients including Geth, Besu, Nethermind, Teku, Nimbus, Lighthouse, Prysm, and Mevboost.
-- **Standard Configuration**: Get the same results as manually following Somer's update guides
-- **GUI & CLI Versions**: Choose the version that suits your comfort level and setup.
-
-## Prerequisites:
-
-
-**Update system and install packages:**
-
-`sudo apt-get update && sudo apt-get install git curl -y && sudo pip install requests`
-
-**Clone the repository:**
-
-`git clone https://github.com/accidental-green/validator-updater.git`
+- **Multi-client Support**: Geth, Besu, Nethermind, Reth, Teku, Nimbus, Lighthouse, Prysm, and Mevboost
+- **Standard Configuration**: Compatible with any setup using /usr/local/bin (Somer Esat, Coin Cashew, etc)
+- **Easy to Use**: No technical skills necessary, just click "Update"
 
 ## Update Instructions:
-Choose either GUI (pop-up window) or CLI (terminal). Program starts upon running one of these commands:
+Open a new terminal (Ctrl + Alt + T) and copy/paste the following command:
 
-**GUI Version:**
-
-`python3 validator-updater/validator_updater_gui.py`
-
-**or CLI Version:**
-
-`python3 validator-updater/validator_updater_cli.py`
-
-### Validator Update (GUI):
-
-Make selections and click "Update". The GUI window will close and updates will proceed in the terminal.
+**Note:** The application will automatically open once you enter your password
 
 
-![Screenshot from 2024-01-16 16-50-40](https://github.com/accidental-green/validator-update/assets/72235883/c2718fb3-8c97-4a93-aa2e-7d49bb4a5cec)
+```bash
+sudo timedatectl set-ntp true && sudo apt-get update --allow-releaseinfo-change || true && sudo apt install -y curl && bash <(curl -s https://raw.githubusercontent.com/accidental-green/ValiDapp/main/install.sh)
+```
+
+### Main Menu:
+
+Review your validator information and click "Update Validator".
+
+![validater_updater_main](https://github.com/user-attachments/assets/ec95758d-dcdd-4195-beab-a48aa317e46c)
+
+### Update Progress Window:
+Once updates complete, click "Continue"
+
+
+![Screenshot from 2025-03-27 12-05-43](https://github.com/user-attachments/assets/a7dd2a2f-8597-492e-8df0-3b0a0b9080e6)
 
 
 ### Successful Update:
+Review the updated versions and ensure all clients are running
 
-![Screenshot from 2024-03-02 00-22-58](https://github.com/accidental-green/validator-updater/assets/72235883/378db086-635d-46a3-a7d5-3e46f7e94a79)
+![Screenshot from 2025-03-27 12-06-28](https://github.com/user-attachments/assets/addf4cf3-c5f9-445d-a98b-74e7c35292c4)
 
 
-Once the updates have completed (~1 minute), you can start the services and begin validating again!
+### Technical Users (CLI):
 
-### Update Steps (CLI):
+If you prefer to run the terminal version rather than GUI, you can run the following commands:
 
-If you prefer to run the CLI version, the update will look like this:
+**Update system and install packages:**
 
+```sudo apt-get update && sudo apt-get install git curl -y && sudo pip install requests```
+
+**Clone the repository:**
+
+```git clone https://github.com/accidental-green/validator-updater.git```
+
+**Run CLI Version:**
+
+```python3 validator-updater/validator_updater_cli.py```
+
+<br>
 
 ![image](https://github.com/accidental-green/validator-update/assets/72235883/815da101-3077-4a56-afc8-98bec9a1372b)
 
-
-## Important Note:
-
-This project is open source but has not been audited. It is still relatively untested, so please use caution.
 
 ## Credits:
 
