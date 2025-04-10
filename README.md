@@ -1,4 +1,7 @@
 # Ethereum Validator Updater
+
+![validater_updater_main](https://github.com/user-attachments/assets/ec95758d-dcdd-4195-beab-a48aa317e46c)
+
 Open source application to easily update Ethereum clients to the latest versions with a single click.
 
 ## Features:
@@ -44,15 +47,13 @@ If you prefer to run the terminal version rather than GUI, you can run the follo
 
 ```sudo apt-get update && sudo apt-get install git curl -y && sudo pip install requests```
 
-**Clone the repository:**
+### Download and Run CLI Updater:
 
-```git clone https://github.com/accidental-green/validator-updater.git```
+```bash
+curl -O https://raw.githubusercontent.com/accidental-green/validator-updater/main/modules/validator_updater_cli.py && python3 validator_updater_cli.py
+```
 
-**Run CLI Version:**
-
-```python3 validator-updater/validator_updater_cli.py```
-
-<br>
+### Updater CLI Window:
 
 ![image](https://github.com/accidental-green/validator-update/assets/72235883/815da101-3077-4a56-afc8-98bec9a1372b)
 
