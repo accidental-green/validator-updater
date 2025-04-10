@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Validator Updater Summary</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            height: 100vh;
+            margin: 0;
+            padding: 10px;
+        }
+        .dashboard-wrapper {
+            display: flex;
+            justify-content: center;
+            width: 100%;
+            max-width: 1200px;
+            margin-top: 20px;
+        }
+        .node-container {
+            flex: 1.5;
+            background: white;
+            padding: 15px 20px;
+            margin: 0 auto;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 450px;
+            min-height: auto;
+        }
+        h1 {
+            margin: 0 0 5px 0;
+            font-size: 32px;
+            color: #333;
+            text-align: center;
+        }
+        .blurb {
+            font-size: 16px;
+            color: #555;
+            text-align: center;
+            line-height: 1.4;
+        }
+        table {
+            width: 100%;
+            margin: 15px auto 20px auto;
+            border-collapse: collapse;
+            border: 1px solid #ddd;
+        }
+        th, td {
+            text-align: center;
+            padding: 4px;
+            font-size: 15px;
+        }
+        th {
+            background-color: #f8f9fa;
+        }
+        .additional-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+        }
+        .link-button {
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 6px 10px;
+            cursor: pointer;
+            font-size: 15px;
+            width: 48%;
+        }
+        .line {
+            height: 2px;
+            background-color: black;
+            width: 100%;
+            margin-top: 5px;
+            margin-bottom: 10px;
+        }
+        #exitButton {
+            background-color: #FFA500;
+        }
+        #exitButton:hover {
+            background-color: #e59400;
+        }
+        #journalsButton {
+            background-color: #007bff;
+        }
+        #journalsButton:hover {
+            background-color: #0056b3;
+        }
+    </style>
+    
+</head>
+<body>
+    <div class="dashboard-wrapper">        
+        <div class="node-container">
+            <h1>Validator Summary</h1>
+            <div class="line"></div>
+            <div class="blurb">
+                Updates complete! Validator details listed below:
+                <br>
+            </div>
+            <table class="info-table">
+                <tr>
+                    <th>Client</th>
+                    <th>Name</th>
+                    <th>Version</th>
+                    <th>Status</th>
+                </tr>
+                <tr>
+                    <td>Execution</td>
+                    <td id="executionValue">Not selected</td>
+                    <td id="executionVersion">-</td>
+                    <td id="executionStatus">-</td>
+                </tr>
+                <tr>
+                    <td>Consensus</td>
+                    <td id="consensusValue">Not selected</td>
+                    <td id="consensusVersion">-</td>
+                    <td id="consensusStatus">-</td>
+                </tr>
+                <tr>
+                    <td>Validator</td>
+                    <td id="validatorValue">Not selected</td>
+                    <td id="validatorVersion">-</td>
+                    <td id="validatorStatus">-</td>
+                </tr>
+                <tr>
+                    <td>Mevboost</td>
+                    <td id="mevboostValue">Not selected</td>
+                    <td id="mevboostVersion">-</td>
+                    <td id="mevboostStatus">-</td>
+                </tr>
+            </table>
+            <div class="additional-buttons">
+                <button class="link-button" id="exitButton">Done</button>
+                <button class="link-button" id="journalsButton">View Logs</button>
+            </div>
+        </div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            electronAPI.receive('get-installed-versions', (installedUsers) => {
+                const settings = categorizeInstalledClients(installedUsers);
+                applySettings(settings);
+            });
+        });
+
+        function categorizeInstalledClients(installedClients) {
+            const settings = {
+                execution: { name: 'None', version: '-' },
+                consensus: { name: 'None', version: '-' },
+                validator: { name: 'None', version: '-' },
+                mevboost: { name: 'None', version: '-' }
+            };
+
+            installedClients.forEach(clientData => {
+                const clientName = Object.keys(clientData)[0];
+                const clientVersion = clientData[clientName];
+
+                if (['Geth', 'Nethermind', 'Besu', 'Reth'].includes(clientName)) {
+                    settings.execution = { name: clientName, version: clientVersion };
+                } else if (['Lighthouse', 'Prysm', 'Teku', 'Nimbus'].includes(clientName)) {
+                    settings.consensus = { name: clientName, version: clientVersion };
+                    settings.validator = { name: clientName, version: clientVersion };
+                } else if (clientName === 'Mevboost') {
+                    settings.mevboost = { name: 'Mevboost', version: clientVersion };
+                }
+            });
+
+            return settings;
+        }
+
+
+        function applySettings(settings) {
+            document.getElementById('executionValue').textContent = settings.execution.name !== 'None' ? settings.execution.name.toUpperCase() : 'Not selected';
+            document.getElementById('executionVersion').textContent = settings.execution.version;
+
+            document.getElementById('consensusValue').textContent = settings.consensus.name !== 'None' ? adjustDisplayName(settings.consensus.name).toUpperCase() : 'Not selected';
+            document.getElementById('consensusVersion').textContent = settings.consensus.version;
+
+            document.getElementById('validatorValue').textContent = settings.validator.name !== 'None' ? adjustDisplayName(settings.validator.name).toUpperCase() : 'Not selected';
+            document.getElementById('validatorVersion').textContent = settings.validator.version;
+
+            document.getElementById('mevboostValue').textContent = settings.mevboost.name !== 'None' ? 'ON' : 'OFF';
+            document.getElementById('mevboostVersion').textContent = settings.mevboost.version;
+
+            fetchAndUpdateServices();
+        }
+
+        function adjustDisplayName(name) {
+            if (name === 'lighthousebeacon') return 'Lighthouse';
+            if (name === 'prysmbeacon') return 'Prysm';
+            if (name === 'lighthousevalidator') return 'Lighthouse';
+            if (name === 'prysmvalidator') return 'Prysm';
+            return name;
+        }
+
+        async function fetchAndUpdateServices() {
+            await fetchServicesStatus();
+        }
+
+        setInterval(fetchAndUpdateServices, 10000); // 10 seconds
+
+        async function fetchServicesStatus() {
+            try {
+                const runningServices = await window.electronAPI.checkServicesStatus();
+                let consensusDisplayName = document.getElementById('consensusValue').textContent.toLowerCase();
+                let validatorDisplayName = document.getElementById('validatorValue').textContent.toLowerCase();
+
+                function adjustConsensusFunc(displayName) {
+                    if (displayName.includes("lighthouse")) return "lighthousebeacon";
+                    if (displayName.includes("prysm")) return "prysmbeacon";
+                    return displayName;
+                }
+                function adjustValidatorFunc(displayName) {
+                    if (displayName.includes("lighthouse")) return "lighthousevalidator";
+                    if (displayName.includes("prysm")) return "prysmvalidator";
+                    return displayName;
+                }
+
+                const adjustedConsensusName = adjustConsensusFunc(consensusDisplayName);
+                const adjustedValidatorName = adjustValidatorFunc(validatorDisplayName);
+
+                setServiceStatus('executionStatus', runningServices.includes(document.getElementById('executionValue').textContent.toLowerCase()) ? '<span class="text-success">Active</span>' : '<span class="text-danger">Stopped</span>');
+                setServiceStatus('consensusStatus', runningServices.includes(adjustedConsensusName) ? '<span class="text-success">Active</span>' : '<span class="text-danger">Stopped</span>');
+                setServiceStatus('validatorStatus', runningServices.includes(adjustedValidatorName) ? '<span class="text-success">Active</span>' : '<span class="text-danger">Stopped</span>');
+                setServiceStatus('mevboostStatus', runningServices.includes('mevboost') ? '<span class="text-success">Active</span>' : '<span class="text-danger">Stopped</span>');
+
+            } catch (error) {
+                console.error('Failed to fetch services status:', error);
+            }
+        }
+
+        function setServiceStatus(id, value) {
+            const element = document.getElementById(id);
+            if (element) {
+                element.innerHTML = value;
+            }
+        }
+
+        document.getElementById('exitButton').onclick = function () {
+            window.close(); // Acts as Exit
+        };
+
+        document.getElementById('journalsButton').onclick = function () {
+            window.api.sendJournalsStart();
+        };
+    </script>
+</body>
+</html>

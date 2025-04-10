@@ -1,0 +1,59 @@
+{
+  "name": "validator_updater",
+  "version": "1.0.0",
+  "description": "Electron app for managing Ethereum services",
+  "main": "app/js/main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder --linux"
+  },
+  "build": {
+    "asar": true,
+    "asarUnpack": [
+      "modules/**/*.py"
+    ],
+    "appId": "validator_updater",
+    "productName": "Validator_Updater",
+    "linux": {
+      "target": [
+        "AppImage"
+      ],
+      "category": "Utility",
+      "icon": "app/assets/logo.png"
+    },
+    "files": [
+      "app/**/*",
+      "dist/**/*",
+      "modules/**/*",
+      "resources/**/*",
+      "!node_modules/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "./modules/",
+        "to": "modules",
+        "filter": [
+          "**/*"
+        ]
+      },
+      {
+        "from": "./app/assets/",
+        "to": "app/assets",
+        "filter": [
+          "**/*"
+        ]
+      },
+      {
+        "from": "./requirements.txt",
+        "to": "requirements.txt"
+      }
+    ]
+  },
+  "author": "accidental-green",
+  "devDependencies": {
+    "electron": "13.6.9",
+    "electron-builder": "^22.11.7"
+  },
+  "keywords": [],
+  "license": "ISC"
+}

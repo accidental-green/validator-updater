@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Validator Updater
+Comment=Update Ethereum Validator Clients
+Exec=/home/%u/.local/bin/Validator_Updater_v2.AppImage
+Icon=validator-updater
+Terminal=true
+Type=Application
+Categories=Utility;Application;
