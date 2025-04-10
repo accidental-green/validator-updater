@@ -28,7 +28,7 @@ install_python_and_dependencies() {
 # Function to install Validator Updater for Ubuntu 24.04 (extracting the AppImage)
 install_validator_updater_24_04() {
   echo "Downloading and extracting Validator Updater for Ubuntu 24.04..."
-  wget https://github.com/accidental-green/validator-updater/releases/download/v1.0.0/Validator_Updater-1.0.0.AppImage -O Validator_Updater-1.0.0.AppImage
+  wget https://github.com/accidental-green/Validator_Updater/releases/download/v1.0.0-alpha/Validator_Updater-1.0.0.AppImage -O Validator_Updater-1.0.0.AppImage
   chmod +x Validator_Updater-1.0.0.AppImage
   ./Validator_Updater-1.0.0.AppImage --appimage-extract
 
@@ -54,27 +54,11 @@ install_validator_updater_24_04() {
 # Function to install Validator Updater for Ubuntu 20.04 and 22.04 (direct AppImage usage)
 install_validator_updater_20_22() {
   echo "Downloading and installing Validator Updater for Ubuntu 20.04/22.04..."
-  wget https://github.com/accidental-green/validator-updater/releases/download/v1.0.0/Validator_Updater-1.0.0.AppImage -O Validator_Updater-1.0.0.AppImage
+  wget https://github.com/accidental-green/Validator_Updater/releases/download/v1.0.0-alpha/Validator_Updater-1.0.0.AppImage -O Validator_Updater-1.0.0.AppImage
   chmod +x Validator_Updater-1.0.0.AppImage
   sudo mv Validator_Updater-1.0.0.AppImage /usr/bin/validator_updater
 
   echo "Validator Updater has been successfully installed. You can run it by typing 'validator_updater'"
-}
-
-# Function to create desktop icon for Validator Updater
-create_desktop_icon() {
-  echo "Creating desktop entry for Validator Updater..."
-  cat <<EOF | sudo tee /usr/share/applications/validator-updater.desktop > /dev/null
-[Desktop Entry]
-Version=1.0
-Name=Validator Updater
-Exec=/usr/bin/validator_updater
-Icon=/opt/validator_updater/resources/app/assets/logo.png
-Terminal=false
-Type=Application
-Categories=Utility;
-EOF
-  echo "Desktop entry for Validator Updater has been created."
 }
 
 # Main script execution
@@ -95,8 +79,6 @@ case "$ubuntu_version" in
     install_validator_updater_20_22
     ;;
 esac
-
-create_desktop_icon
 
 # Run the application
 validator_updater &
