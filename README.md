@@ -14,7 +14,7 @@ Open a new terminal (Ctrl + Alt + T) and copy/paste the following command:
 
 
 ```bash
-sudo timedatectl set-ntp true && sudo apt-get update --allow-releaseinfo-change || true && sudo apt install -y curl && bash <(curl -s https://raw.githubusercontent.com/accidental-green/ValiDapp/main/install.sh)
+sudo timedatectl set-ntp true && sudo apt-get update --allow-releaseinfo-change || true && sudo apt install -y curl && bash <(curl -s https://raw.githubusercontent.com/accidental-green/validator-updater/main/install.sh)
 ```
 
 ### Main Menu:
