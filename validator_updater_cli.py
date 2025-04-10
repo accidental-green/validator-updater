@@ -33,11 +33,11 @@ def user_exists(username):
 
 # Prompt User to select an Ethereum execution client
 def is_valid_client(client):
-    valid_exec_clients = ['GETH', 'BESU', 'NETHERMIND', 'SKIP']
+    valid_exec_clients = ['GETH', 'BESU', 'NETHERMIND', 'RETH', 'SKIP']
     return client in valid_exec_clients
 
 while True:
-    execution_client = input("\nSelect Execution Client to update: (geth, besu, nethermind, or skip): ").upper()
+    execution_client = input("\nSelect Execution Client to update: (geth, besu, nethermind, reth, or skip): ").upper()
     if is_valid_client(execution_client):
         print(f"Selected client: {execution_client}")
         break
@@ -85,6 +85,10 @@ if execution_client == "besu":
 if execution_client == "nethermind":
     print("Stopping nethermind service")
     subprocess.run(['sudo', 'systemctl', 'stop', 'nethermind'])
+
+if execution_client == "reth":
+    print("Stopping reth service")
+    subprocess.run(['sudo', 'systemctl', 'stop', 'reth'])
 
 if consensus_client == "teku":
     print("Stopping teku service")
@@ -252,99 +256,145 @@ if execution_client == 'geth':
 
 ############ BESU ##################
 if execution_client == 'besu':
-	# Install OpenJDK-17-JRE
-	subprocess.run(["sudo", "apt", "-y", "install", "openjdk-17-jre"])
+    # Install dependencies
+    subprocess.run(["sudo", "apt", "-y", "install", "openjdk-21-jre"])
+    subprocess.run(["sudo", "apt", "install", "-y", "libjemalloc-dev"])
 
-	# Install libjemalloc-dev
-	subprocess.run(["sudo", "apt", "install", "-y", "libjemalloc-dev"])
+    # Create user and directories
+    subprocess.run(['sudo', 'useradd', '--no-create-home', '--shell', '/bin/false', 'besu'])
+    subprocess.run(['sudo', 'mkdir', '-p', '/var/lib/besu'])
+    subprocess.run(['sudo', 'chown', '-R', 'besu:besu', '/var/lib/besu'])
 
-	# Get the latest version number
-	url = "https://api.github.com/repos/hyperledger/besu/releases/latest"
-	response = urllib.request.urlopen(url)
-	data = json.loads(response.read().decode("utf-8"))
-	latest_version = data['tag_name']
+    # Get latest version info
+    url = "https://api.github.com/repos/hyperledger/besu/releases/latest"
+    response = urllib.request.urlopen(url)
+    data = json.loads(response.read().decode("utf-8"))
+    latest_version = data['tag_name']
 
-	besu_version = latest_version
+    # Download and extract
+    download_url = f"https://github.com/hyperledger/besu/releases/download/{latest_version}/besu-{latest_version}.tar.gz"
+    file_path, _ = urllib.request.urlretrieve(download_url)
+    dirname = f"besu-{latest_version}"
 
-	# Download the latest version
-	download_url = f"https://hyperledger.jfrog.io/hyperledger/besu-binaries/besu/{latest_version}/besu-{latest_version}.tar.gz"
-	urllib.request.urlretrieve(download_url, f"besu-{latest_version}.tar.gz")
+    with tarfile.open(file_path, "r:gz") as tar:
+        tar.extractall()
 
-	# Extract the tar.gz file
-	with tarfile.open(f"besu-{latest_version}.tar.gz", "r:gz") as tar:
-	    tar.extractall()
+    # Remove previous if exists
+    if os.path.exists('/usr/local/bin/besu'):
+        subprocess.run(['sudo', 'rm', '-r', '/usr/local/bin/besu'])
+        print('Existing Besu executable removed from /usr/local/bin.')
 
-	# Remove the existing besu executable from /usr/local/bin if it exists
-	if os.path.exists('/usr/local/bin/besu'):
-	    subprocess.run(['sudo', 'rm', '-r', '/usr/local/bin/besu'])
-	    print('Existing Besu executable removed from /usr/local/bin.')
+    # Move new
+    subprocess.run(["sudo", "cp", "-a", dirname, "/usr/local/bin/besu"], check=True)
 
-	# Copy the extracted besu folder to /usr/local/bin/besu
-	subprocess.run(["sudo", "cp", "-a", f"besu-{latest_version}", "/usr/local/bin/besu"], check=True)
+    # Cleanup
+    os.remove(file_path)
+    shutil.rmtree(dirname)
 
-	# Remove the downloaded .tar.gz file
-	os.remove(f"besu-{latest_version}.tar.gz")
-
-	print(f'\nSuccessfully installed besu-{latest_version}')
+    print(f"\nSuccessfully installed Besu {latest_version}")
 
 ############ NETHERMIND ##################
 if execution_client == 'nethermind':
+    try:
+        subprocess.run(["sudo", "useradd", "--no-create-home", "--shell", "/bin/false", "nethermind"], check=False)
+        subprocess.run(["sudo", "mkdir", "-p", "/var/lib/nethermind"], check=True)
+        subprocess.run(["sudo", "chown", "-R", "nethermind:nethermind", "/var/lib/nethermind"], check=True)
+        subprocess.run(["sudo", "apt-get", "install", "libsnappy-dev", "libc6-dev", "libc6", "unzip", "-y"], check=True)
+
+        url = 'https://api.github.com/repos/NethermindEth/nethermind/releases/latest'
+        response = requests.get(url)
+        assets = response.json()['assets']
+        download_url = next((a['browser_download_url'] for a in assets if a['name'].endswith('linux-x64.zip')), None)
+        zip_filename = download_url.split('/')[-1]
+
+        if not download_url:
+            print("Error: Could not find the download URL for the latest release.")
+            exit(1)
+
+        temp_path = f"/tmp/{zip_filename}"
+        urllib.request.urlretrieve(download_url, temp_path)
+
+        # Clean old install
+        subprocess.run(["sudo", "rm", "-rf", "/usr/local/bin/nethermind"], check=True)
+        subprocess.run(["sudo", "mkdir", "-p", "/usr/local/bin/nethermind"], check=True)
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            with zipfile.ZipFile(temp_path, 'r') as zip_ref:
+                zip_ref.extractall(temp_dir)
+            subprocess.run(["sudo", "cp", "-a", f"{temp_dir}/.", "/usr/local/bin/nethermind"], check=True)
+
+        # Set executable + owner
+        subprocess.run(["sudo", "chmod", "+x", "/usr/local/bin/nethermind/nethermind"], check=True)
+        subprocess.run(["sudo", "chown", "-R", "nethermind:nethermind", "/usr/local/bin/nethermind"], check=True)
+
+        # Clean up
+        os.remove(temp_path)
+
+        nethermind_version = response.json()['tag_name']
+        print(f"\nSuccessfully installed Nethermind {nethermind_version}")
+
+    except Exception as e:
+        print(f"Failed to install Nethermind: {e}")
+
+############ RETH INSTALL ##################
+if execution_client == 'reth':
     # Create User and directories
-    subprocess.run(["sudo", "useradd", "--no-create-home", "--shell", "/bin/false", "nethermind"])
-    subprocess.run(["sudo", "mkdir", "-p", "/var/lib/nethermind"])
-    subprocess.run(["sudo", "chown", "-R", "nethermind:nethermind", "/var/lib/nethermind"])
-    subprocess.run(["sudo", "apt-get", "install", "libsnappy-dev", "libc6-dev", "libc6", "unzip", "-y"], check=True)
+    subprocess.run(['sudo', 'useradd', '--no-create-home', '--shell', '/bin/false', 'reth'], stderr=subprocess.DEVNULL)
+    subprocess.run(['sudo', 'mkdir', '-p', '/var/lib/reth'], check=True)
+    subprocess.run(['sudo', 'chown', '-R', 'reth:reth', '/var/lib/reth'], check=True)
 
     # Define the Github API endpoint to get the latest release
-    url = 'https://api.github.com/repos/NethermindEth/nethermind/releases/latest'
+    url = "https://api.github.com/repos/paradigmxyz/reth/releases/latest"
 
-    # Send a GET request to the API endpoint
+    # Get the latest release info
     response = requests.get(url)
+    reth_version = response.json()['tag_name']
 
-    # Search for the asset with the name that ends in linux-x64.zip
+    # Search for the asset with the correct tar.gz format
     assets = response.json()['assets']
     download_url = None
-    zip_filename = None
+    tar_filename = None
     for asset in assets:
-        if asset['name'].endswith('linux-x64.zip'):
-            download_url = asset['browser_download_url']
-            zip_filename = asset['name']
-            break
+        if asset['name'].endswith('x86_64-unknown-linux-gnu.tar.gz'):
+            if asset['name'].startswith('reth'):
+                download_url = asset['browser_download_url']
+                tar_filename = asset['name']
+                break
 
-    if download_url is None or zip_filename is None:
+    if download_url is None or tar_filename is None:
         print("Error: Could not find the download URL for the latest release.")
         exit(1)
 
     # Download the latest release binary
-    response = requests.get(download_url)
+    urllib.request.urlretrieve(download_url, f"/tmp/{tar_filename}")
 
-    # Save the binary to a temporary file
-    with tempfile.NamedTemporaryFile('wb', suffix='.zip', delete=False) as temp_file:
-        temp_file.write(response.content)
-        temp_path = temp_file.name
+    # Create a temporary extraction directory
+    temp_extract_dir = "/tmp/reth_extracted"
+    subprocess.run(["mkdir", "-p", temp_extract_dir], check=True)
 
-    # Create a temporary directory for extraction
-    with tempfile.TemporaryDirectory() as temp_dir:
-        # Extract the binary to the temporary directory
-        with zipfile.ZipFile(temp_path, 'r') as zip_ref:
-            zip_ref.extractall(temp_dir)
+    # Extract the tar.gz file into the temporary directory
+    with tarfile.open(f"/tmp/{tar_filename}", "r:gz") as tar:
+        tar.extractall(path=temp_extract_dir)
 
-        # Copy the contents of the temporary directory to /usr/local/bin/nethermind using sudo
-        subprocess.run(["sudo", "cp", "-a", f"{temp_dir}/.", "/usr/local/bin/nethermind"])
+    # Identify the extracted binary (ensure correct name)
+    extracted_binary_path = os.path.join(temp_extract_dir, "reth")
 
-    # chown nethermind:nethermind /usr/local/bin/nethermind
-    subprocess.run(["sudo", "chown", "nethermind:nethermind", "/usr/local/bin/nethermind"])
+    if not os.path.isfile(extracted_binary_path):
+        print("Error: Reth binary not found after extraction.")
+        exit(1)
 
-    # chown nethermind:nethermind /usr/local/bin/nethermind/nethermind
-    subprocess.run(["sudo", "chown", "nethermind:nethermind", "/usr/local/bin/nethermind/nethermind"])
+    # Move the binary to /usr/local/bin with sudo
+    subprocess.run(["sudo", "mv", extracted_binary_path, "/usr/local/bin/reth"], check=True)
 
-    # chmod a+x /usr/local/bin/nethermind/nethermind
-    subprocess.run(["sudo", "chmod", "a+x", "/usr/local/bin/nethermind/nethermind"])
+    # Set the correct ownership and permissions
+    subprocess.run(["sudo", "chown", "reth:reth", "/usr/local/bin/reth"], check=True)
+    subprocess.run(["sudo", "chmod", "755", "/usr/local/bin/reth"], check=True)
 
-    # Remove the temporary zip file
-    os.remove(temp_path)
+    # Clean up temporary files
+    os.remove(f"/tmp/{tar_filename}")
+    subprocess.run(["rm", "-rf", temp_extract_dir], check=True)
 
-    nethermind_version = os.path.splitext(zip_filename)[0]
+    print("Reth installation completed successfully!")
 
 ############ TEKU ##################
 if consensus_client == 'teku':
@@ -543,18 +593,21 @@ if execution_client == 'besu':
     print(f'Besu Version: {besu_version}\n')
 
 # Nethermind Print
+
 if execution_client == 'nethermind':
-    nethermind_output = subprocess.run(["sudo", "/usr/local/bin/nethermind/nethermind", "-v"], capture_output=True, text=True)
-    if nethermind_output.returncode == 0:
-        version_match = re.search(r'Version:\s*(\S+)', nethermind_output.stdout)
-        if version_match:
-            version_str = version_match.group(1)
-            nethermind_version = version_str.split('+')[0]  # Remove additional build information
-        else:
-            nethermind_version = "Version information not found"
-    else:
-        nethermind_version = "Failed to execute command"
-    print(f'Nethermind Version: {nethermind_version}\n')
+    output = subprocess.check_output(["sudo", "/usr/local/bin/nethermind/nethermind", "--version"], text=True)
+    version = output.split("Version:")[-1].split()[0]
+    print(f'Nethermind Version: v{version}')
+
+# Reth Print
+if execution_client == 'reth':
+    result = subprocess.run(["reth", "--version"], stdout=subprocess.PIPE, text=True)
+    for line in result.stdout.splitlines():
+        if "Version:" in line:
+            reth_version = line.split("Version:")[1].strip()
+            print(f"Reth Version: v{reth_version}")
+            break
+
 
 # Teku Print
 if consensus_client == 'teku':
@@ -602,10 +655,19 @@ if consensus_client == 'lighthouse':
 
 # MEV BOOST PRINT
 if mevboost_update == "yes":
-    # Check MEV-Boost version
-    output = subprocess.check_output(["mev-boost", "-version"], text=True)
-    version = output.split()[-1]
-    print(f"Mevboost Version: {output.split()[-1]}\n")
+    try:
+        output = subprocess.check_output(
+            ["mev-boost", "--version"],
+            stderr=subprocess.STDOUT,
+            text=True
+        ).strip()
+
+        match = re.search(r'v\d+\.\d+\.\d+', output)
+        version = match.group(0) if match else "Unavailable"
+        print(f"Mevboost Version: {version}")
+
+    except Exception:
+        print("Mevboost Version: Unavailable")
 
 # Constructing the list of services to start
 services_to_start = [execution_client.lower(), consensus_client.lower()]
