@@ -81,4 +81,4 @@ case "$ubuntu_version" in
 esac
 
 # Run the application
-validator_updater &
+validator_updater --no-sandbox &
