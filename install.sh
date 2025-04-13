@@ -21,7 +21,7 @@ sudo apt update -y
 if [[ "$ubuntu_version" == "24.04" ]]; then
   sudo apt install -y python3 python3-pip python3-requests libfuse2
 else
-  sudo apt install -y python3 python3-pip libfuse2
+  sudo apt install -y python3 python3-pip libfuse2 libnss3 libxss1 libatk1.0-0 libgtk-3-0 libasound2
   sudo pip3 install requests || true
 fi
 
@@ -49,4 +49,9 @@ fi
 
 # Launch the app
 echo "Launching Validator Updater..."
-validator_updater --no-sandbox
+
+if [[ "$ubuntu_version" == "24.04" ]]; then
+  validator_updater --no-sandbox
+else
+  validator_updater
+fi
