@@ -1,7 +1,5 @@
 #!/bin/bash
 
-set -e
-
 APP_URL="https://github.com/accidental-green/validator-updater/releases/download/v1.0.0/Validator_Updater-1.0.0.AppImage"
 APP_IMAGE="Validator_Updater-1.0.0.AppImage"
 APP_TMP="/tmp/$APP_IMAGE"
@@ -51,5 +49,4 @@ fi
 
 # Launch the app
 echo "Launching Validator Updater..."
-nohup validator_updater --no-sandbox >/dev/null 2>&1 &
-disown
+validator_updater --no-sandbox
