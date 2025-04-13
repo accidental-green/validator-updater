@@ -2,72 +2,49 @@
 
 set -e
 
-# Fix broken dpkg state if necessary
+APP_URL="https://github.com/accidental-green/validator-updater/releases/download/v1.0.0/Validator_Updater-1.0.0.AppImage"
+APP_IMAGE="Validator_Updater-1.0.0.AppImage"
+APP_DEST="/usr/bin/validator_updater"
+
+# Fix broken dpkg state if needed
 sudo dpkg --configure -a || true
 
-# Function to detect the Ubuntu version
-get_ubuntu_version() {
-  . /etc/os-release
-  echo "$VERSION_ID"
-}
+# Get Ubuntu version
+. /etc/os-release
+ubuntu_version="$VERSION_ID"
 
-# Function to install Python and dependencies
-install_python_and_dependencies() {
-  echo "Installing dependencies for Ubuntu $1"
-  sudo apt update -y
-  sudo add-apt-repository universe -y
-  sudo apt update -y
+# Install dependencies
+echo "Installing Python and required packages for Ubuntu $ubuntu_version..."
+sudo apt update -y
+sudo add-apt-repository universe -y
+sudo apt update -y
 
-  if [ "$1" == "24.04" ]; then
-    sudo apt install -y python3 python3-pip python3-requests libfuse2
-  else
-    sudo apt install -y python3 python3-pip libfuse2
-    sudo pip3 install requests
-  fi
-}
+if [[ "$ubuntu_version" == "24.04" ]]; then
+  sudo apt install -y python3 python3-pip python3-requests libfuse2
+else
+  sudo apt install -y python3 python3-pip libfuse2
+  sudo pip3 install requests
+fi
 
-# Function to install Validator Updater for Ubuntu 24.04 (extracted AppImage)
-install_validator_updater_24_04() {
-  echo "Installing Validator Updater for Ubuntu 24.04..."
-  wget https://github.com/accidental-green/validator-updater/releases/download/v1.0.0/Validator_Updater-1.0.0.AppImage -O Validator_Updater-1.0.0.AppImage
-  chmod +x Validator_Updater-1.0.0.AppImage
-  ./Validator_Updater-1.0.0.AppImage --appimage-extract
+# Download and install Validator Updater
+echo "Downloading Validator Updater..."
+wget -q "$APP_URL" -O /tmp/$APP_IMAGE
+chmod +x /tmp/$APP_IMAGE
+
+if [[ "$ubuntu_version" == "24.04" ]]; then
+  echo "Extracting AppImage for 24.04..."
+  /tmp/$APP_IMAGE --appimage-extract
 
   sudo rm -rf /opt/validator_updater
   sudo mv squashfs-root /opt/validator_updater
-
   sudo chown root:root /opt/validator_updater/chrome-sandbox
   sudo chmod 4755 /opt/validator_updater/chrome-sandbox
+  sudo ln -sf /opt/validator_updater/validator_updater $APP_DEST
+else
+  echo "Moving AppImage to $APP_DEST..."
+  sudo mv /tmp/$APP_IMAGE $APP_DEST
+fi
 
-  sudo ln -sf /opt/validator_updater/validator_updater /usr/bin/validator_updater
-}
-
-# Function to install Validator Updater for Ubuntu 20.04 and 22.04
-install_validator_updater_20_22() {
-  echo "Installing Validator Updater for Ubuntu 20.04/22.04..."
-  wget https://github.com/accidental-green/validator-updater/releases/download/v1.0.0/Validator_Updater-1.0.0.AppImage -O /tmp/validator_updater
-  chmod +x /tmp/validator_updater
-  sudo mv /tmp/validator_updater /usr/bin/validator_updater
-}
-
-# Main execution
-ubuntu_version=$(get_ubuntu_version)
-
-case "$ubuntu_version" in
-  "24.04")
-    install_python_and_dependencies "$ubuntu_version"
-    install_validator_updater_24_04
-    ;;
-  "20.04"|"22.04")
-    install_python_and_dependencies "$ubuntu_version"
-    install_validator_updater_20_22
-    ;;
-  *)
-    echo "Unsupported or unknown Ubuntu version. Attempting generic install..."
-    install_python_and_dependencies "other"
-    install_validator_updater_20_22
-    ;;
-esac
-
-echo "Launching Validator Updater with --no-sandbox..."
+# Launch app
+echo "Launching Validator Updater..."
 validator_updater --no-sandbox &
