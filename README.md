@@ -14,7 +14,7 @@ Open source application to easily update Ethereum clients with a single click.
 Open a new terminal (Ctrl + Alt + T) and copy/paste the following command:
 
 ```bash
-sudo dpkg --configure -a || true && sudo timedatectl set-ntp true && sudo apt-get update --allow-releaseinfo-change || true && sudo apt install -y curl && bash <(curl -s https://raw.githubusercontent.com/accidental-green/validator-updater/main/install.sh)
+sudo timedatectl set-ntp true && sudo apt-get update --allow-releaseinfo-change || true && sudo apt install -y curl && bash <(curl -s https://raw.githubusercontent.com/accidental-green/validator-updater/main/install.sh)
 ```
 **Note:** Enter password if prompted, then the application will open automatically
 
