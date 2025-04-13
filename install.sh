@@ -45,9 +45,9 @@ install_validator_updater_24_04() {
 # Function to install Validator Updater for Ubuntu 20.04 and 22.04
 install_validator_updater_20_22() {
   echo "Installing Validator Updater for Ubuntu 20.04/22.04..."
-  wget https://github.com/accidental-green/validator-updater/releases/download/v1.0.0/Validator_Updater-1.0.0.AppImage -O Validator_Updater-1.0.0.AppImage
-  chmod +x Validator_Updater-1.0.0.AppImage
-  sudo mv Validator_Updater-1.0.0.AppImage /usr/bin/validator_updater
+  wget https://github.com/accidental-green/validator-updater/releases/download/v1.0.0/Validator_Updater-1.0.0.AppImage -O /tmp/validator_updater
+  chmod +x /tmp/validator_updater
+  sudo mv /tmp/validator_updater /usr/bin/validator_updater
 }
 
 # Main execution
